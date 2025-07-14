@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --env-file --allow-env --watch main.ts",
+    "prod": "deno run --alow-net main.ts",
+    "deploy": "deployctl deploy"
+  },
+  "imports": {
+    "@oak/oak": "jsr:@oak/oak@^17.1.5",
+    "@std/assert": "jsr:@std/assert@1"
+  },
+  "deploy": {
+    "project": "f7522a4a-df77-4322-9132-5939e0e79420",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
+  }
+}
