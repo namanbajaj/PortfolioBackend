@@ -13,60 +13,64 @@ router.get("/health", (ctx) => {
   ctx.response.status = Status.OK;
 });
 
-router.get("/test", async (ctx) => {
-  await fetch("https://api.github.com/repos/namanbajaj/portfolio_json/contents/test.json", {
-    headers: {
-      "Authorization": Deno.env.get("GITHUB_API_KEY") || ""
-    },
-  }).then((response) => response.json())
-    .then(async (data: GithubResp) => {
-      console.log(data);
-      if (data.download_url) {
-        const download_url = data.download_url;
-        console.log('download url: ', download_url)
-        await fetch(download_url).then((response) => response.json())
-          .then(data => {
-            console.log(data)
-            ctx.response.status = Status.OK;
-            ctx.response.body = data;
-          })
-      }
-      else {
-        ctx.response.body = { "Error": 404 }
-        ctx.response.status = Status.NotFound;
-      }
-      ctx.response.type = "json";
-    });
-});
-
 router.get("/fetchJSON", async (ctx) => {
+  ctx.response.type = "json";
+
+  const allowedOrigins = [
+    'https://www.namanbajaj.com'
+  ]
+
+  const requestOrigin = ctx.request.headers.get("origin") || "";
+  const password = ctx.request.url.searchParams.get('password') || "";
+  if (allowedOrigins.includes(requestOrigin) || password === Deno.env.get("API_PASSWORD")) {
+    ctx.response.headers.set("Access-Control-Allow-Origin", requestOrigin)
+  }
+  else {
+    ctx.response.status = Status.Unauthorized;
+    ctx.response.body = { "Error": "Forbidden" };
+    return;
+  }
+
   const json_filename = ctx.request.url.searchParams.get('filename');
+  if (json_filename === null) {
+    ctx.response.body = { "Error": "Send a filename" }
+    ctx.response.status = Status.BadRequest
+    return;
+  }
+
   const url = "https://api.github.com/repos/namanbajaj/portfolio_json/contents/" + json_filename;
   const headers = {
     "Authorization": Deno.env.get("GITHUB_API_KEY") || ""
   };
 
+  if (headers.Authorization === "") {
+    ctx.response.body = { "Error": "Auth not found" }
+    ctx.response.status = Status.Forbidden
+    return;
+  }
+
   await fetch(url, { headers: headers })
     .then(response => response.json())
     .then(async (data: GithubResp) => {
-      console.log(data);
       if (data.download_url) {
         const download_url = data.download_url;
-        console.log('download url: ', download_url)
         await fetch(download_url).then((response) => response.json())
           .then(data => {
             console.log(data)
-            ctx.response.status = Status.OK;
-            ctx.response.body = data;
+            if (data) {
+              ctx.response.status = Status.OK;
+              ctx.response.body = data;
+            }
+            else {
+              ctx.response.status = Status.InternalServerError;
+              ctx.response.body = { "Error": "Unable to parse data: " + data }
+            }
           })
       }
       else {
         ctx.response.body = { "Error": "File with name " + json_filename + " not found" }
         ctx.response.status = Status.NotFound;
       }
-      ctx.response.type = "json";
-      console.log(ctx.request.headers.get('origin'))
-      ctx.response.headers.set("Access-Control-Allow-Origin", "*")
     })
 });
 

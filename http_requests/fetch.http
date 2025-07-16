@@ -1,1 +1,1 @@
-GET http://localhost:8000/fetchJSON?filename=languages_backend.json HTTP/1.1
+GET http://localhost:8000/fetchJSON?filename=languages_info.json&password=xLCp2Sq5F0lBefZknQ5PL3QcN5uMD7dw HTTP/1.1
