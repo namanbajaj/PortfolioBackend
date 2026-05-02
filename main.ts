@@ -18,6 +18,8 @@ router.get("/health", (ctx) => {
 });
 
 router.get("/fetchJSON", async (ctx) => {
+  console.log("Request: ", ctx)
+
   ctx.response.type = "json";
 
   const allowedOrigins = [
