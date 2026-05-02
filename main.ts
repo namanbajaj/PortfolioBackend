@@ -5,6 +5,10 @@ import GithubResp from "./models/githubresp.ts";
 
 const router = new Router();
 
+router.get("/", (ctx) => {
+  ctx.response.body = "Welcome to my portfolio backend"
+})
+
 router.get("/health", (ctx) => {
   ctx.response.body = {
     message: "OK",
